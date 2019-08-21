@@ -1,0 +1,11 @@
+{
+    "name": "intonation/grid-bundle",
+    "description": "Data grids and tables for Symfony projects.",
+    "type": "symfony-bundle",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Intonation\\GridBundle\\": ""
+        }
+    }
+}
