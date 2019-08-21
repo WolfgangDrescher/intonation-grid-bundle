@@ -36,5 +36,5 @@ return PhpCsFixer\Config::create()
             ->exclude('Resources/config')
             ->exclude('Resources/public')
     )
-    ->setCacheFile(__DIR__.'/var/.php_cs.cache')
+    ->setUsingCache(false)
 ;
