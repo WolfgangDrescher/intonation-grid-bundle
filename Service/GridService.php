@@ -23,13 +23,17 @@ use Symfony\Component\HttpFoundation\Request;
 
 class GridService
 {
+    private const PAGINATION_DEFAULT_ITEMS_PER_PAGE = 15;
+
     private $gridFactory;
     private $parameterBag;
+    private $paginationItemsPerPage;
 
     public function __construct(DefaultGridFactory $gridFactory, ParameterBagInterface $parameterBag)
     {
         $this->gridFactory = $gridFactory;
         $this->parameterBag = $parameterBag;
+        $this->paginationItemsPerPage = self::PAGINATION_DEFAULT_ITEMS_PER_PAGE;
     }
 
     /**
@@ -67,7 +71,7 @@ class GridService
 
         $adapter = new DoctrineORMAdapter($queryBuilder);
         $pagerfanta = new Pagerfanta($adapter);
-        $pagerfanta->setMaxPerPage(max('all' === $limitParam ? \count($pagerfanta) : (int) $limitParam, 5));
+        $pagerfanta->setMaxPerPage(max('all' === $limitParam ? \count($pagerfanta) : ((int) $limitParam ?: $this->paginationItemsPerPage), 5));
         $pagerfanta->setCurrentPage(max((int) $currentPageParam, 1));
 
         return $pagerfanta;
