@@ -41,7 +41,9 @@ class ElementTypeGuesser implements ElementTypeGuesserInterface
         }
 
         if ($metadata->hasAssociation($property)) {
-            return new TypeGuess(CollectionType::class, [], Guess::HIGH_CONFIDENCE);
+            if($metadata->isCollectionValuedAssociation($property)) {
+                return new TypeGuess(CollectionType::class, [], Guess::HIGH_CONFIDENCE);
+            }
         }
 
         switch ($metadata->getTypeOfField($property)) {
