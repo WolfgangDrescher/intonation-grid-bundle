@@ -67,8 +67,8 @@ class GridService
 
         $adapter = new DoctrineORMAdapter($queryBuilder);
         $pagerfanta = new Pagerfanta($adapter);
-        $pagerfanta->setMaxPerPage(max($limitParam === 'all' ? count($pagerfanta) : intval($limitParam), 5));
-        $pagerfanta->setCurrentPage( max(intval($currentPageParam), 1));
+        $pagerfanta->setMaxPerPage(max('all' === $limitParam ? \count($pagerfanta) : (int) $limitParam, 5));
+        $pagerfanta->setCurrentPage(max((int) $currentPageParam, 1));
 
         return $pagerfanta;
     }
