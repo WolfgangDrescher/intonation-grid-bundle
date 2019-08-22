@@ -12,12 +12,14 @@
 namespace Intonation\GridBundle\Service;
 
 use Doctrine\ORM\QueryBuilder;
+use Intonation\GridBundle\Utils\ElementTypeGuesserInterface;
 use Pagerfanta\Adapter\DoctrineORMAdapter;
 use Pagerfanta\Pagerfanta;
 use Prezent\Grid\DefaultGridFactory;
 use Prezent\Grid\Extension\Core\GridType;
 use Prezent\Grid\Grid;
 use Prezent\Grid\GridBuilder;
+use ReflectionClass;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -27,12 +29,14 @@ class GridService
 
     private $gridFactory;
     private $parameterBag;
+    private $elementTypeGuesser;
     private $paginationItemsPerPage;
 
-    public function __construct(DefaultGridFactory $gridFactory, ParameterBagInterface $parameterBag)
+    public function __construct(DefaultGridFactory $gridFactory, ParameterBagInterface $parameterBag, ElementTypeGuesserInterface $elementTypeGuesser)
     {
         $this->gridFactory = $gridFactory;
         $this->parameterBag = $parameterBag;
+        $this->elementTypeGuesser = $elementTypeGuesser;
         $this->paginationItemsPerPage = self::PAGINATION_DEFAULT_ITEMS_PER_PAGE;
     }
 
@@ -83,5 +87,17 @@ class GridService
     private function sanitizeQueryParam(string $string): string
     {
         return preg_replace('/[^a-z0-9.]+/i', '', $string);
+    }
+
+    public function createGridFromEntity(string $className)
+    {
+        $gridBuilder = $this->createBuilder();
+        $reflectionClass = new ReflectionClass($className);
+        foreach ($reflectionClass->getProperties() as $property) {
+            $guessType = $this->elementTypeGuesser->guessType($className, $property->getName());
+            $gridBuilder->addColumn($property->getName(), $guessType->getType(), $guessType->getOptions());
+        }
+
+        return $gridBuilder->getGrid();
     }
 }
