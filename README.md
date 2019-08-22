@@ -6,39 +6,25 @@ Data grids with pagination and filters for Symfony project based on the [prezent
 Installation
 ------------
 
-### Applications that use Symfony Flex
+1. Open a command console, enter your project directory and execute:   
 
-Open a command console, enter your project directory and execute:
+    ```console
+    $ composer require intonation/grid-bundle
+    ```
 
-```console
-$ composer require intonation/grid-bundle
-```
+2. Since the service configuration of `prezent/grid-bundle` seemd not to work well with Symfony 4 add the following fix to `config/services.yaml` to register all `GridType` as public services: 
 
-### Applications that don't use Symfony Flex
+    ```yaml
+    services:
+        App\Grid\:
+            resource: '../src/Grid/*'
+            public: true
+    ```
 
-#### Step 1: Download the Bundle
+3. Add the Twig grid theme of the IntonationGridBundle to `config/packages/perzent_grid.yaml`:
 
-Open a command console, enter your project directory and execute the
-following command to download the latest stable version of this bundle:
-
-```console
-$ composer require intonation/grid-bundle
-```
-
-This command requires you to have Composer installed globally, as explained
-in the [installation chapter](https://getcomposer.org/doc/00-intro.md)
-of the Composer documentation.
-
-#### Step 2: Enable the Bundle
-
-Then, enable the bundle by adding it to the list of registered bundles
-in the `config/bundles.php` file of your project:
-
-```php
-// config/bundles.php
-
-return [
-    // ...
-    Intonation\GridBundle\IntonationGridBundle::class => ['all' => true],
-];
-```
+    ```yaml
+    prezent_grid:
+        themes:
+            - '@IntonationGrid/Grid/grid.html.twig'
+    ```
