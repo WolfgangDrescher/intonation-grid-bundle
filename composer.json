@@ -4,7 +4,8 @@
     "type": "symfony-bundle",
     "license": "MIT",
     "require": {
-        "php": "^7.2"
+        "php": "^7.2",
+        "prezent/grid-bundle": "^0.4.13"
     },
     "autoload": {
         "psr-4": {
