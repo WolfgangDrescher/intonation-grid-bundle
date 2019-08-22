@@ -7,3 +7,5 @@ services:
         class: Twig_Extensions_Extension_Text
         tags:
             - { name: twig.extension }
+
+    Prezent\Grid\DefaultGridFactory: '@grid_factory'
