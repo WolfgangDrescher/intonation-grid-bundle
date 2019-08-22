@@ -46,31 +46,6 @@ abstract class Guess
     private $confidence;
 
     /**
-     * Returns the guess most likely to be correct from a list of guesses.
-     *
-     * If there are multiple guesses with the same, highest confidence, the
-     * returned guess is any of them.
-     *
-     * @param Guess[] $guesses An array of guesses
-     *
-     * @return self|null
-     */
-    public static function getBestGuess(array $guesses)
-    {
-        $result = null;
-        $maxConfidence = -1;
-
-        foreach ($guesses as $guess) {
-            if ($maxConfidence < $confidence = $guess->getConfidence()) {
-                $maxConfidence = $confidence;
-                $result = $guess;
-            }
-        }
-
-        return $result;
-    }
-
-    /**
      * @param int $confidence The confidence
      *
      * @throws InvalidArgumentException if the given value of confidence is unknown
