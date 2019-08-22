@@ -12,19 +12,24 @@
 namespace Intonation\GridBundle\Service;
 
 use Doctrine\ORM\QueryBuilder;
+use Pagerfanta\Adapter\DoctrineORMAdapter;
+use Pagerfanta\Pagerfanta;
 use Prezent\Grid\DefaultGridFactory;
 use Prezent\Grid\Extension\Core\GridType;
 use Prezent\Grid\Grid;
 use Prezent\Grid\GridBuilder;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\Request;
 
 class GridService
 {
     private $gridFactory;
+    private $parameterBag;
 
-    public function __construct(DefaultGridFactory $gridFactory)
+    public function __construct(DefaultGridFactory $gridFactory, ParameterBagInterface $parameterBag)
     {
         $this->gridFactory = $gridFactory;
+        $this->parameterBag = $parameterBag;
     }
 
     /**
@@ -46,5 +51,33 @@ class GridService
     public function getAllData(QueryBuilder $queryBuilder): iterable
     {
         return $queryBuilder->getQuery()->getResult();
+    }
+
+    public function getPaginatedData(QueryBuilder $queryBuilder, Request $request): Pagerfanta
+    {
+        $alias = current($queryBuilder->getDQLPart('from'))->getAlias();
+        $sortField = $request->query->get($this->parameterBag->get('prezent_grid.sort_field_parameter'));
+        $sortOrder = $request->query->get($this->parameterBag->get('prezent_grid.sort_order_parameter'));
+        $currentPageParam = $request->query->get('page');
+        $limitParam = $request->query->get('limit');
+
+        if ($sortField) {
+            $queryBuilder->orderBy("$alias.{$this->sanitizeQueryParam($sortField)}", 'DESC' === mb_strtoupper($sortOrder) ? 'DESC' : 'ASC');
+        }
+
+        $adapter = new DoctrineORMAdapter($queryBuilder);
+        $pagerfanta = new Pagerfanta($adapter);
+        $pagerfanta->setMaxPerPage(max($limitParam === 'all' ? count($pagerfanta) : intval($limitParam), 5));
+        $pagerfanta->setCurrentPage( max(intval($currentPageParam), 1));
+
+        return $pagerfanta;
+    }
+
+    /**
+     * Removes all non-alphanumeric characters except whitespaces.
+     */
+    private function sanitizeQueryParam(string $string): string
+    {
+        return preg_replace('/[^a-z0-9.]+/i', '', $string);
     }
 }
