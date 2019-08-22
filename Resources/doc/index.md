@@ -13,7 +13,7 @@ Create a reusable `GridType` for each entity as shown below. For more informatio
 ```php
 // src/Grid/EventGridType.php
 
-namespace App\Grid\Event;
+namespace App\Grid;
 
 use IntlDateFormatter;
 use Prezent\Grid\BaseGridType;
