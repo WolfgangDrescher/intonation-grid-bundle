@@ -28,3 +28,8 @@ Installation
         themes:
             - '@IntonationGrid/Grid/grid.html.twig'
     ```
+
+Documentation
+-------------
+
+For a complete guide to using this grid bundle see the [documentation](Resources/doc/index.md).
