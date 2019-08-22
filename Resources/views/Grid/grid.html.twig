@@ -1,0 +1,58 @@
+{% extends '@PrezentGrid/Grid/grid.html.twig' %}
+
+{% trans_default_domain 'IntonationGrid' %}
+
+{% block grid_container %}
+    {{ grid(grid, data) }}
+    <div class="pagerfanta">
+        {{ pagerfanta(data, 'twitter_bootstrap4_translated') }}
+    </div>
+{% endblock %}
+
+{%- block grid -%}
+    <table {{ block('grid_attributes') }}>
+        <thead>
+            {{- grid_header_row(grid) -}}
+        </thead>
+        <tbody>
+            {% for item in data %}
+                {{- grid_row(grid, item) -}}
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            {{ block('grid_footer')}}
+        </tfoot>
+    </table>
+{%- endblock grid -%}
+
+
+{%- block grid_footer -%}
+    <tr>
+        <td colspan="999">
+            {{ 'Showing {{ from }} to {{ to }} of {{ number }} entries'|trans(
+                {
+                    '{{ from }}': (data.getCurrentPage - 1) * data.maxPerPage + 1,
+                    '{{ to }}': (data.getCurrentPage - 1) * data.maxPerPage + data.currentPageResults|length,
+                    '{{ number }}': data.nbResults,
+                }
+            ) }}
+            <form class="form-inline" style="display: inline;">
+                {% for key, value in app.request.query.all %}
+                    {% if key != 'limit' %}
+                        <input type="hidden" name="{{ key }}" value="{{ key == 'page' ? 1 : value }}">
+                    {% endif %}
+                {% endfor %}
+                <select name="limit" onchange="this.form.submit()">
+                    <option value="10" {{ data.maxPerPage == 10 ? 'selected="selected"' }}>10</option>
+                    <option value="25" {{ data.maxPerPage == 25 ? 'selected="selected"' }}>25</option>
+                    <option value="50" {{ data.maxPerPage == 50 ? 'selected="selected"' }}>50</option>
+                    <option value="100" {{ data.maxPerPage == 100 ? 'selected="selected"' }}>100</option>
+                    <option value="all" {{ app.request.query.get('limit') == 'all' ? 'selected="selected"' }}>{{ 'All'|trans }}</option>
+                </select>
+                <noscript>
+                    <button type="submit">{{ 'Limit'|trans }}</button>
+                </noscript>
+            </form>
+        </td>
+    </tr>
+{%- endblock -%}
