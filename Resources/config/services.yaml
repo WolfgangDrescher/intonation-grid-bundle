@@ -13,3 +13,9 @@ services:
     Intonation\GridBundle\Twig\GridExtension:
         tags:
             - { name: twig.extension }
+
+    Intonation\GridBundle\Utils\ElementTypeGuesserInterface: '@Intonation\GridBundle\Utils\ElementTypeGuesser'
+
+    Intonation\GridBundle\Utils\ElementTypeGuesser:
+        autowire: true
+
