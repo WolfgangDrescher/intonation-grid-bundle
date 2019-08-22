@@ -25,6 +25,8 @@ use Symfony\Component\HttpFoundation\Request;
 
 class GridService
 {
+    public const PROPERTY_SELECT_MODE_EXCLUSIVE = 'exclusive';
+    public const PROPERTY_SELECT_MODE_EXCLUDE = 'exclude';
     private const PAGINATION_DEFAULT_ITEMS_PER_PAGE = 15;
 
     private $gridFactory;
@@ -89,11 +91,18 @@ class GridService
         return preg_replace('/[^a-z0-9.]+/i', '', $string);
     }
 
-    public function createGridFromEntity(string $className)
+    public function createGridFromEntity(string $className, ?array $properties = [], string $propertySelectMode = self::PROPERTY_SELECT_MODE_EXCLUSIVE)
     {
         $gridBuilder = $this->createBuilder();
         $reflectionClass = new ReflectionClass($className);
+
         foreach ($reflectionClass->getProperties() as $property) {
+            if (self::PROPERTY_SELECT_MODE_EXCLUSIVE === $propertySelectMode and !\in_array($property->getName(), $properties, true)) {
+                continue;
+            }
+            if (self::PROPERTY_SELECT_MODE_EXCLUDE === $propertySelectMode and \in_array($property->getName(), $properties, true)) {
+                continue;
+            }
             $guessType = $this->elementTypeGuesser->guessType($className, $property->getName());
             $gridBuilder->addColumn($property->getName(), $guessType->getType(), $guessType->getOptions());
         }
