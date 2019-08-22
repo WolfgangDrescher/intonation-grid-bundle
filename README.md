@@ -1,7 +1,7 @@
 IntonationGridBundle
 ====================
 
-Data grids and tables for your Symfony project.
+Data grids with pagination and filters for Symfony project based on the [prezent/grid-bundle](https://github.com/Prezent/prezent-grid-bundle).
 
 Installation
 ------------
