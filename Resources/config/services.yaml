@@ -9,3 +9,7 @@ services:
             - { name: twig.extension }
 
     Prezent\Grid\DefaultGridFactory: '@grid_factory'
+
+    Intonation\GridBundle\Twig\GridExtension:
+        tags:
+            - { name: twig.extension }
