@@ -6,7 +6,8 @@
     "require": {
         "php": "^7.2",
         "prezent/grid-bundle": "^0.4.13",
-        "white-october/pagerfanta-bundle": "^1.2"
+        "white-october/pagerfanta-bundle": "^1.2",
+        "doctrine/annotations": "^1.0"
     },
     "autoload": {
         "psr-4": {
