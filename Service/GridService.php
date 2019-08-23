@@ -11,7 +11,11 @@
 
 namespace Intonation\GridBundle\Service;
 
+use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\ORM\QueryBuilder;
+use Intonation\GridBundle\Annotation\Exclude;
+use Intonation\GridBundle\Annotation\ExclusionPolicy;
+use Intonation\GridBundle\Annotation\Expose;
 use Intonation\GridBundle\Utils\ElementTypeGuesserInterface;
 use Pagerfanta\Adapter\DoctrineORMAdapter;
 use Pagerfanta\Pagerfanta;
@@ -20,19 +24,19 @@ use Prezent\Grid\Extension\Core\GridType;
 use Prezent\Grid\Grid;
 use Prezent\Grid\GridBuilder;
 use ReflectionClass;
+use ReflectionProperty;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\Request;
 
 class GridService
 {
-    public const PROPERTY_SELECT_MODE_EXCLUSIVE = 'exclusive';
-    public const PROPERTY_SELECT_MODE_EXCLUDE = 'exclude';
     private const PAGINATION_DEFAULT_ITEMS_PER_PAGE = 15;
 
     private $gridFactory;
     private $parameterBag;
     private $elementTypeGuesser;
     private $paginationItemsPerPage;
+    private $annotationReader;
 
     public function __construct(DefaultGridFactory $gridFactory, ParameterBagInterface $parameterBag, ElementTypeGuesserInterface $elementTypeGuesser)
     {
@@ -40,6 +44,7 @@ class GridService
         $this->parameterBag = $parameterBag;
         $this->elementTypeGuesser = $elementTypeGuesser;
         $this->paginationItemsPerPage = self::PAGINATION_DEFAULT_ITEMS_PER_PAGE;
+        $this->annotationReader = new AnnotationReader();
     }
 
     /**
@@ -91,22 +96,38 @@ class GridService
         return preg_replace('/[^a-z0-9.]+/i', '', $string);
     }
 
-    public function createGridFromEntity(string $className, ?array $properties = [], string $propertySelectMode = self::PROPERTY_SELECT_MODE_EXCLUSIVE)
+    public function createGridFromEntity(string $className)
     {
         $gridBuilder = $this->createBuilder();
         $reflectionClass = new ReflectionClass($className);
 
+        /** @var ExclusionPolicy|null $exclusionPolicy */
+        $exclusionPolicy = $this->annotationReader->getClassAnnotation($reflectionClass, ExclusionPolicy::class);
+
         foreach ($reflectionClass->getProperties() as $property) {
-            if (self::PROPERTY_SELECT_MODE_EXCLUSIVE === $propertySelectMode and !\in_array($property->getName(), $properties, true)) {
-                continue;
+            if ($this->exclusionPolicyIsGrantedForProperty($property, $exclusionPolicy)) {
+                $guessType = $this->elementTypeGuesser->guessType($className, $property->getName());
+                $gridBuilder->addColumn($property->getName(), $guessType->getType(), $guessType->getOptions());
             }
-            if (self::PROPERTY_SELECT_MODE_EXCLUDE === $propertySelectMode and \in_array($property->getName(), $properties, true)) {
-                continue;
-            }
-            $guessType = $this->elementTypeGuesser->guessType($className, $property->getName());
-            $gridBuilder->addColumn($property->getName(), $guessType->getType(), $guessType->getOptions());
         }
 
         return $gridBuilder->getGrid();
+    }
+
+    private function exclusionPolicyIsGrantedForProperty(ReflectionProperty $property, ?ExclusionPolicy $exclusionPolicy): bool
+    {
+        $exclude = $this->annotationReader->getPropertyAnnotation($property, Exclude::class);
+        $expose = $this->annotationReader->getPropertyAnnotation($property, Expose::class);
+
+        if ($exclusionPolicy instanceof ExclusionPolicy) {
+            if (ExclusionPolicy::NONE === $exclusionPolicy->policy and $exclude instanceof Exclude) {
+                return false;
+            }
+            if (ExclusionPolicy::ALL === $exclusionPolicy->policy and !$expose instanceof Expose) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }
